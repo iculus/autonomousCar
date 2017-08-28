@@ -20,9 +20,8 @@ def play_music(music_file):
 		print("Music file {} loaded!".format(music_file))
 	except pygame.error:
 		print("File {} not found! {}".format(music_file, pg.get_error()))
-		#return
+		return
 
-	print music_file
 	pg.mixer.music.play()
 
 	# for x in range(0,100):
@@ -42,10 +41,8 @@ pg.mixer.init(freq, bitsize, channels, buffer)
 pg.mixer.music.set_volume(1.0)
 
 mp3s = []
-for file in os.listdir("/home/pi/AdamsCar"):
+for file in os.listdir("."):
 	if file.endswith(".mp3"):
-		file = '/home/pi/AdamsCar/' + file
-		print file
 		mp3s.append(file)
 
 
@@ -92,24 +89,16 @@ minute = datetime.datetime.now().strftime("%M")
 secs = datetime.datetime.now().strftime("%S")
 filename = year+'-'+month+'-'+day+'-'+hour+'-'+minute+'-'+secs+'-'+"save.p"
 
-def checkThresh(arrayOfInterest, threshold, name, wait, orig):
-	print wait
-	if abs (arrayOfInterest) > threshold and wait == False:
+def checkThresh(arrayOfInterest, threshold, name):
+	if abs (arrayOfInterest) > threshold:
 		print name, arrayOfInterest
 		event = (name, arrayOfInterest)
-		global timerDelay
 		try: client.send( OSCMessage ("/event",event) )
 		except: pass
 		for x in mp3s:
 			try: play_music(x) 
 			except: pass
-		return True, time.time()
-	else:
-		return wait, orig
 
-timerDelay = True
-import time
-timeThen = time.time()
 while run:
 	# Read the Euler angles for heading, roll, pitch (all in degrees).
 	heading, roll, pitch = bno.read_euler()
@@ -133,20 +122,16 @@ while run:
 	Gx,Gy,Gz = bno.read_gravity()
 	values = (heading, roll, pitch, gyro, accel, mag, temp_c, Mx,My,Mz, Gyrx, Gyry, Gyrz, Ax, Ay, Az, LAx, LAy, LAz, Gx, Gy, Gz)
 
-	timeNow = time.time()	
 
-	if timeNow - timeThen > 4:
-		timerDelay = False
-	elif timeNow - timeThen <= 4:
-		timerDelay = True
-
-	if timerDelay == False:
-		Xthresh = 3
-		XGyrothresh = 10
-		timerDelay,timeThen = checkThresh(LAx, Xthresh, 'x-event',timerDelay, timeThen)
-		timerDelay,timeThen = checkThresh(LAy, Xthresh, 'y-event',timerDelay, timeThen)
-		timerDelay,timeThen = checkThresh(LAz, Xthresh, 'z-event',timerDelay, timeThen)
-    		#pickle.dump( values, open(filename, "ab"))
-		try: client.send( OSCMessage ("/data", values) )
-		except: pass
+	Xthresh = 10
+	XGyrothresh = 10
+	checkThresh(LAx, Xthresh, 'x-event')
+	checkThresh(LAy, Xthresh, 'y-event')
+	checkThresh(LAz, Xthresh, 'z-event')
+	checkThresh(Gx, XGyrothresh, 'x-Gyro-event')
+	checkThresh(Gy, XGyrothresh, 'y-Gyro-event')
+	checkThresh(Gz, XGyrothresh, 'z-Gyro-event')
+    	#pickle.dump( values, open(filename, "ab"))
+	try: client.send( OSCMessage ("/data", values) )
+	except: pass
 	#time.sleep(0.01)

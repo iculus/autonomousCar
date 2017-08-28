@@ -6,17 +6,10 @@ import time
 from OSC import OSCClient, OSCMessage, OSCServer
 from Adafruit_BNO055 import BNO055
 
-
-server=OSCServer(("192.168.42.1", 7120))
-server.timeout = 0
-
-def user_callback(path,tags,args,source):
-	print args
-
-server.addMsgHandler( "/serverIP", user_callback)
+run = True
 
 client = OSCClient()
-client.connect( ("192.168.42.13", 7110) )
+client.connect( ("192.168.42.11", 7110) )
 
 #bno = BNO055.BNO055(serial_port='/dev/ttyAMA0', rst=17)
 bno = BNO055.BNO055(serial_port='/dev/ttyS0', rst=17)
@@ -56,12 +49,7 @@ minute = datetime.datetime.now().strftime("%M")
 secs = datetime.datetime.now().strftime("%S")
 filename = year+'-'+month+'-'+day+'-'+hour+'-'+minute+'-'+secs+'-'+"save.p"
 
-def each_frame():
-	server.timed_out = False
-	while not server.timed_out:
-		server.handle_request()
-
-while True:
+while run:
     # Read the Euler angles for heading, roll, pitch (all in degrees).
     heading, roll, pitch = bno.read_euler()
     # Read the calibration status, 0=uncalibrated and 3=fully calibrated.
@@ -98,7 +86,4 @@ while True:
     	client.send( OSCMessage ("/data", values) )
     except:
 	pass
-    each_frame()
     time.sleep(0.01)
-
-server.close()

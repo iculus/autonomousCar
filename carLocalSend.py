@@ -93,7 +93,6 @@ secs = datetime.datetime.now().strftime("%S")
 filename = year+'-'+month+'-'+day+'-'+hour+'-'+minute+'-'+secs+'-'+"save.p"
 
 def checkThresh(arrayOfInterest, threshold, name, wait, orig):
-	print wait
 	if abs (arrayOfInterest) > threshold and wait == False:
 		print name, arrayOfInterest
 		event = (name, arrayOfInterest)

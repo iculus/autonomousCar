@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
 import getIP
-from OSC import OSCServer
+from OSC import OSCServer, OSCClient
 import sys
 from time import sleep
 import numpy as np
 import matplotlib.pyplot as plt
+
+client = OSCClient()
+client.connect( ("192.168.42.1", 7120) )
 
 myIPwlan0 = getIP.get_ip_address("wlan0")
 
 server = OSCServer( (myIPwlan0, 7110) )
 server.timeout = 0
 run = True
+
+try:
+	client.send("/serverIP", myIPwlan0)
+except:
+	pass
 
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is 

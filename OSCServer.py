@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
+import getIP
 from OSC import OSCServer
 import sys
 from time import sleep
 import numpy as np
 import matplotlib.pyplot as plt
 
-server = OSCServer( ('192.168.42.11', 7110) )
+myIPwlan0 = getIP.get_ip_address("wlan0")
+
+server = OSCServer( (myIPwlan0, 7110) )
 server.timeout = 0
 run = True
 
